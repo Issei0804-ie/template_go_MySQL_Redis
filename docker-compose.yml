@@ -1,0 +1,42 @@
+version: '3'
+services:
+  db:
+    image: mysql:latest
+    container_name: db
+    ports:
+      - 3306:3306
+    volumes:
+      - ./DB/data:/var/lib/mysql
+      - ./DB/init:/docker-entrypoint-initdb.d
+      - ./DB/config:/etc/mysql/mysql.conf.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_USER_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - TZ=Asia/Tokyo
+    tty: true
+  
+  backend:
+    build: .
+    container_name: backend
+    ports:
+      - 8080:8080
+    volumes:
+      - ./log:/var/log/backend/
+      - ./src:/go/src/app
+    environment:
+      - PRODUCT=${PRODUCT}
+    links:
+      - db
+      - redis
+    tty: true
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - ./radis/data:/data
+    tty: true
